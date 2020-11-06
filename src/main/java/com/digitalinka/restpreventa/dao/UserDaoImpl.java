@@ -2,11 +2,9 @@ package com.digitalinka.restpreventa.dao;
 
 import com.digitalinka.restpreventa.UtilDao;
 import com.digitalinka.restpreventa.model.*;
-import com.digitalinka.restpreventa.model.response.StatusResponse;
-import com.digitalinka.restpreventa.model.response.UserResponse;
+import com.digitalinka.restpreventa.model.response.*;
 import oracle.jdbc.driver.OracleConnection;
 import oracle.jdbc.OracleTypes;
-import oracle.net.aso.s;
 import org.apache.commons.dbcp2.DelegatingConnection;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +13,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Repository
@@ -24,6 +23,10 @@ public class UserDaoImpl implements UserDao {
 
     @Value("${nombrePaquete}")
     protected String nombrePaquete;
+
+
+    @Value("${pkName}")
+    protected String pkName;
 
     @Transactional(readOnly = false)
     @Override
@@ -131,6 +134,239 @@ public class UserDaoImpl implements UserDao {
                 statusResponse.setStatusCode(-1);
                 statusResponse.setStatusText(e.getMessage());
                 return statusResponse;
+
+            }
+        });
+    }
+
+    @Transactional(readOnly = false)
+    @Override
+    public SueldoResponse getSueldo(List<Object[]> parametrosString) {
+        return sessionFactory.getCurrentSession().doReturningWork(conn -> {
+            SueldoResponse sueldoResponse = new SueldoResponse();
+            StatusResponse statusResponse = new StatusResponse();
+            try {
+                DelegatingConnection del = new DelegatingConnection(conn);
+                OracleConnection connection = (OracleConnection) del.getInnermostDelegate();
+                Array arrayStrinb = connection.createARRAY("LISTPARAMETR0STRING", UtilDao.getStructsString("PARAMETR0STRING", connection, parametrosString));
+                CallableStatement cs = connection.prepareCall("call " + pkName + ".SP_GLOBAL(?,?,?,?)");
+                cs.setArray(1, arrayStrinb);
+                cs.registerOutParameter(2, OracleTypes.NUMBER);
+                cs.registerOutParameter(3, OracleTypes.VARCHAR);
+                cs.registerOutParameter(4, OracleTypes.CURSOR);
+                cs.execute();
+                statusResponse.setStatusCode(cs.getInt(2));
+                statusResponse.setStatusText(cs.getString(3));
+                ResultSet rs = (ResultSet) cs.getObject(4);
+
+                if (rs != null) {
+                    while (rs.next()) {
+                      sueldoResponse.setSueldo(rs.getDouble("SUELDO"));
+                      sueldoResponse.setCuota(rs.getDouble("CUOTA"));
+                      sueldoResponse.setAvanceCuota(rs.getDouble("AVANCECUOTA"));
+                    }
+                    rs.close();
+                    cs.close();
+                }
+
+                sueldoResponse.setStatus(statusResponse);
+                return sueldoResponse;
+
+            } catch (Exception e) {
+                statusResponse.setStatusCode(-1);
+                statusResponse.setStatusText(e.getMessage());
+                sueldoResponse.setStatus(statusResponse);
+                return sueldoResponse;
+
+            }
+        });
+    }
+
+    @Transactional(readOnly = false)
+    @Override
+    public PeriodoListResponse getPeriodos(List<Object[]> parametrosString) {
+        return sessionFactory.getCurrentSession().doReturningWork(conn -> {
+            PeriodoListResponse periodoListResponse = new PeriodoListResponse();
+            StatusResponse statusResponse = new StatusResponse();
+            try {
+                DelegatingConnection del = new DelegatingConnection(conn);
+                OracleConnection connection = (OracleConnection) del.getInnermostDelegate();
+                Array arrayStrinb = connection.createARRAY("LISTPARAMETR0STRING", UtilDao.getStructsString("PARAMETR0STRING", connection, parametrosString));
+                CallableStatement cs = connection.prepareCall("call " + pkName + ".SP_GLOBAL(?,?,?,?)");
+                cs.setArray(1, arrayStrinb);
+                cs.registerOutParameter(2, OracleTypes.NUMBER);
+                cs.registerOutParameter(3, OracleTypes.VARCHAR);
+                cs.registerOutParameter(4, OracleTypes.CURSOR);
+                cs.execute();
+                statusResponse.setStatusCode(cs.getInt(2));
+                statusResponse.setStatusText(cs.getString(3));
+                ResultSet rs = (ResultSet) cs.getObject(4);
+                List<Periodo> periodos=new ArrayList<>();
+                if (rs != null) {
+                    while (rs.next()) {
+                        Periodo periodo=new Periodo();
+                        periodo.setAnnio(rs.getString("ANNIO"));
+                        periodo.setDescription(rs.getString("DESCRIPTION"));
+                        periodo.setStartDate(rs.getString("START_DATE"));
+                        periodo.setEndDate(rs.getString("END_DATE"));
+                        periodos.add(periodo);
+                    }
+                    rs.close();
+                    cs.close();
+                }
+
+                periodoListResponse.setStatus(statusResponse);
+                periodoListResponse.setPeriodos(periodos);
+                return periodoListResponse;
+
+            } catch (Exception e) {
+                statusResponse.setStatusCode(-1);
+                statusResponse.setStatusText(e.getMessage());
+                periodoListResponse.setStatus(statusResponse);
+                return periodoListResponse;
+
+            }
+        });
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public AvanceResponse getAvanceVentas(List<Object[]> parametrosString) {
+        return sessionFactory.getCurrentSession().doReturningWork(conn -> {
+            AvanceResponse avanceResponse=new AvanceResponse();
+            StatusResponse statusResponse = new StatusResponse();
+            try {
+                DelegatingConnection del = new DelegatingConnection(conn);
+                OracleConnection connection = (OracleConnection) del.getInnermostDelegate();
+                Array arrayStrinb = connection.createARRAY("LISTPARAMETR0STRING", UtilDao.getStructsString("PARAMETR0STRING", connection, parametrosString));
+                CallableStatement cs = connection.prepareCall("call " + pkName + ".SP_GLOBAL(?,?,?,?)");
+                cs.setArray(1, arrayStrinb);
+                cs.registerOutParameter(2, OracleTypes.NUMBER);
+                cs.registerOutParameter(3, OracleTypes.VARCHAR);
+                cs.registerOutParameter(4, OracleTypes.CURSOR);
+                cs.execute();
+                statusResponse.setStatusCode(cs.getInt(2));
+                statusResponse.setStatusText(cs.getString(3));
+                ResultSet rs = (ResultSet) cs.getObject(4);
+
+                if (rs != null) {
+                    while (rs.next()) {
+
+                        avanceResponse.setTotalDias(rs.getInt("TOTAL_DIAS"));
+                        avanceResponse.setAvanceDias(rs.getInt("AVANCE_DIAS"));
+                        avanceResponse.setRestoDias(rs.getInt("RESTO_DIAS"));
+                        avanceResponse.setLinealidad(rs.getDouble("LINEALIDAD_DIA"));
+                        avanceResponse.setNecesidadDiaria(rs.getDouble("NECESIDAD_DIA"));
+                        avanceResponse.setProyección(rs.getDouble("PROYECTADO"));
+                        avanceResponse.setClientesAtendidos(rs.getInt("CLIENTES_ATENDIDOS"));
+
+                    }
+                    rs.close();
+                    cs.close();
+                }
+
+                avanceResponse.setStatus(statusResponse);
+                 return avanceResponse;
+
+            } catch (Exception e) {
+                statusResponse.setStatusCode(-1);
+                statusResponse.setStatusText(e.getMessage());
+                avanceResponse.setStatus(statusResponse);
+                return avanceResponse;
+
+            }
+        });
+    }
+
+    @Transactional(readOnly =true )
+    @Override
+    public AvanceProveedorListResponse getAvanceProveedor(List<Object[]> parametrosString) {
+        return sessionFactory.getCurrentSession().doReturningWork(conn -> {
+            AvanceProveedorListResponse avanceProveedorResponse=new AvanceProveedorListResponse();
+            StatusResponse statusResponse = new StatusResponse();
+            try {
+                DelegatingConnection del = new DelegatingConnection(conn);
+                OracleConnection connection = (OracleConnection) del.getInnermostDelegate();
+                Array arrayStrinb = connection.createARRAY("LISTPARAMETR0STRING", UtilDao.getStructsString("PARAMETR0STRING", connection, parametrosString));
+                CallableStatement cs = connection.prepareCall("call " + pkName + ".SP_GLOBAL(?,?,?,?)");
+                cs.setArray(1, arrayStrinb);
+                cs.registerOutParameter(2, OracleTypes.NUMBER);
+                cs.registerOutParameter(3, OracleTypes.VARCHAR);
+                cs.registerOutParameter(4, OracleTypes.CURSOR);
+                cs.execute();
+                statusResponse.setStatusCode(cs.getInt(2));
+                statusResponse.setStatusText(cs.getString(3));
+                ResultSet rs = (ResultSet) cs.getObject(4);
+
+                List<AvanceProveedor> avances=new ArrayList<>();
+
+                if (rs != null) {
+                    while (rs.next()) {
+                        AvanceProveedor avanceProveedor=new AvanceProveedor();
+                        avanceProveedor.setCodProveedor(rs.getString("COD_PROVEEDOR"));
+                        avanceProveedor.setDescProveedor(rs.getString("DESC_PROVEEDOR"));
+                        avanceProveedor.setAvance(rs.getDouble("AVANCE"));
+                        avances.add(avanceProveedor);
+                    }
+                    rs.close();
+                    cs.close();
+                }
+                avanceProveedorResponse.setAvances(avances);
+                avanceProveedorResponse.setStatus(statusResponse);
+                return avanceProveedorResponse;
+
+            } catch (Exception e) {
+                statusResponse.setStatusCode(-1);
+                statusResponse.setStatusText(e.getMessage());
+                avanceProveedorResponse.setStatus(statusResponse);
+                return avanceProveedorResponse;
+
+            }
+        });
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public AvancePoliticaListResponse getComisiones(List<Object[]> parametrosString) {
+        return sessionFactory.getCurrentSession().doReturningWork(conn -> {
+            AvancePoliticaListResponse avanceProveedorResponse=new AvancePoliticaListResponse();
+            StatusResponse statusResponse = new StatusResponse();
+            try {
+                DelegatingConnection del = new DelegatingConnection(conn);
+                OracleConnection connection = (OracleConnection) del.getInnermostDelegate();
+                Array arrayStrinb = connection.createARRAY("LISTPARAMETR0STRING", UtilDao.getStructsString("PARAMETR0STRING", connection, parametrosString));
+                CallableStatement cs = connection.prepareCall("call " + pkName + ".SP_GLOBAL(?,?,?,?)");
+                cs.setArray(1, arrayStrinb);
+                cs.registerOutParameter(2, OracleTypes.NUMBER);
+                cs.registerOutParameter(3, OracleTypes.VARCHAR);
+                cs.registerOutParameter(4, OracleTypes.CURSOR);
+                cs.execute();
+                statusResponse.setStatusCode(cs.getInt(2));
+                statusResponse.setStatusText(cs.getString(3));
+                ResultSet rs = (ResultSet) cs.getObject(4);
+
+                List<AvancePolitica> avances=new ArrayList<>();
+
+                if (rs != null) {
+                    while (rs.next()) {
+                        AvancePolitica avancePolitica=new AvancePolitica();
+                        avancePolitica.setCodPolitica(rs.getString("COD_POLITICA"));
+                        avancePolitica.setDescPolitica(rs.getString("DESC_POLITICA"));
+                        avancePolitica.setMontoPolitica(rs.getDouble("MONTO_POLITICA"));
+                        avances.add(avancePolitica);
+                    }
+                    rs.close();
+                    cs.close();
+                }
+                avanceProveedorResponse.setAvances(avances);
+                avanceProveedorResponse.setStatus(statusResponse);
+                return avanceProveedorResponse;
+
+            } catch (Exception e) {
+                statusResponse.setStatusCode(-1);
+                statusResponse.setStatusText(e.getMessage());
+                avanceProveedorResponse.setStatus(statusResponse);
+                return avanceProveedorResponse;
 
             }
         });

@@ -6,8 +6,6 @@
     <JAVADOC>
       <root url="jar://$MAVEN_REPOSITORY$/ojdbc/ojdbc/7/ojdbc-7-javadoc.jar!/" />
     </JAVADOC>
-    <SOURCES>
-      <root url="jar://$MAVEN_REPOSITORY$/ojdbc/ojdbc/7/ojdbc-7-sources.jar!/" />
-    </SOURCES>
+    <SOURCES />
   </library>
 </component>
