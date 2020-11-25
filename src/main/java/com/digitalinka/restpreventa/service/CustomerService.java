@@ -1,15 +1,17 @@
 package com.digitalinka.restpreventa.service;
 
 
-import com.digitalinka.restpreventa.model.response.CustomerListResponse;
-import com.digitalinka.restpreventa.model.response.CustomerResponse;
-import com.digitalinka.restpreventa.model.response.DispatcherAddressListResponse;
+import com.digitalinka.restpreventa.model.response.*;
 
 import java.util.List;
 
 public interface CustomerService {
-    CustomerListResponse getClienteList(String usuario);
-    CustomerResponse getCustomerInfo(List<Object[]> parametrosString);
+    CustomerLocalListResponse getClienteList(List<Object[]> parametrosString);
+    CustomerResponse getCustomer(List<Object[]> parametrosString);
     DispatcherAddressListResponse getAdresses(List<Object[]> parametrosString);
+    DispatchAddressResponse getAdressPedido(List<Object[]> parametrosString);
+    CondicionListResponse getCondiciones(List<Object[]> parametrosString);
+    TipoDocListResponse getTiposDocs(List<Object[]> parametrosString);
+
 
 }

@@ -15,4 +15,6 @@ public interface UserService {
     AvanceProveedorListResponse getAvanceProveedor(List<Object[]> parametrosString);
     AvancePoliticaListResponse getComisiones(List<Object[]> parametrosString);
 
+    AlmacenListResponse getAlmacenes(List<Object[]> parametrosString);
+    CondicionListResponse getCondiciones(List<Object[]> parametrosString);
 }

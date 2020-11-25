@@ -14,5 +14,11 @@ public interface UserDao {
     AvanceResponse getAvanceVentas(List<Object[]> parametrosString);
     AvanceProveedorListResponse getAvanceProveedor(List<Object[]> parametrosString);
     AvancePoliticaListResponse getComisiones(List<Object[]> parametrosString);
+
+    AlmacenListResponse getAlmacenes(List<Object[]> parametrosString);
+    CondicionListResponse getCondiciones(List<Object[]> parametrosString);
+
+
+
 }
 

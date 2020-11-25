@@ -1,16 +1,16 @@
 package com.digitalinka.restpreventa.dao;
 
 
-import com.digitalinka.restpreventa.model.DispatchAddress;
-import com.digitalinka.restpreventa.model.response.CustomerListResponse;
-import com.digitalinka.restpreventa.model.response.CustomerResponse;
-import com.digitalinka.restpreventa.model.response.DispatcherAddressListResponse;
+import com.digitalinka.restpreventa.model.response.*;
 
 import java.util.List;
 
 public interface CustomerDao {
-    CustomerListResponse getClienteList(String usuario);
-    CustomerResponse getCustomerInfo(List<Object[]> parametrosString);
+    CustomerLocalListResponse getClienteList(List<Object[]> parametrosString);
+    CustomerResponse getCustomer(List<Object[]> parametrosString);//todo ok
     DispatcherAddressListResponse getAdresses(List<Object[]> parametrosString);
-
+    RouteListResponse getRoutesByDia(List<Object[]> parametrosString);
+    DispatchAddressResponse getAdressPedido(List<Object[]> parametrosString);
+    CondicionListResponse getCondiciones(List<Object[]> parametrosString);
+    TipoDocListResponse getTiposDocs(List<Object[]> parametrosString);
 }

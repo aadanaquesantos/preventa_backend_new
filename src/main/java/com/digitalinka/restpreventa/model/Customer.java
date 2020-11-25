@@ -3,13 +3,15 @@ package com.digitalinka.restpreventa.model;
 public class Customer {
     private String code;
     private String description;
-    private String address;
+     private String address;
     private String dni;
     private String ruc;
     private String phone;
     private String cellPhone;
     private String email;
     private String status;
+
+
 
     public String getDni() {
         return dni;

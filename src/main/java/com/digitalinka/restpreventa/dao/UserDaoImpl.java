@@ -371,4 +371,102 @@ public class UserDaoImpl implements UserDao {
             }
         });
     }
+
+    @Transactional(readOnly = true)
+    @Override
+    public AlmacenListResponse getAlmacenes(List<Object[]> parametrosString) {
+        return sessionFactory.getCurrentSession().doReturningWork(conn -> {
+            AlmacenListResponse almacenListResponse=new AlmacenListResponse();
+            StatusResponse statusResponse = new StatusResponse();
+            try {
+                DelegatingConnection del = new DelegatingConnection(conn);
+                OracleConnection connection = (OracleConnection) del.getInnermostDelegate();
+                Array arrayStrinb = connection.createARRAY("LISTPARAMETR0STRING", UtilDao.getStructsString("PARAMETR0STRING", connection, parametrosString));
+                CallableStatement cs = connection.prepareCall("call " + pkName + ".SP_GLOBAL(?,?,?,?)");
+                cs.setArray(1, arrayStrinb);
+                cs.registerOutParameter(2, OracleTypes.NUMBER);
+                cs.registerOutParameter(3, OracleTypes.VARCHAR);
+                cs.registerOutParameter(4, OracleTypes.CURSOR);
+                cs.execute();
+                statusResponse.setStatusCode(cs.getInt(2));
+                statusResponse.setStatusText(cs.getString(3));
+                almacenListResponse.setStatus(statusResponse);
+                ResultSet rs = (ResultSet) cs.getObject(4);
+                List<Almacen> almacenes=new ArrayList<>();
+
+                if (rs != null) {
+                    while (rs.next()) {
+                        Almacen almacen=new Almacen();
+                        almacen.setCode(rs.getString("COD_ALMACEN"));
+                        almacen.setDescription(rs.getString("DESC_ALMACEN"));
+                        almacen.setCodLocalidad(rs.getString("COD_LOCALIDAD"));
+                         almacen.setCodMesa(rs.getString("COD_MESA"));
+                         almacen.setCodEmpresa(rs.getString("COD_EMPRESA"));
+                         almacen.setCodSede(rs.getString("COD_SEDE"));
+                         almacen.setCodCanal(rs.getString("COD_CANAL"));
+                         almacen.setCodVendedor(rs.getString("COD_VENDEDOR"));
+                         almacenes.add(almacen);
+                    }
+                    rs.close();
+                    cs.close();
+                }
+                almacenListResponse.setAlmacenes(almacenes);
+                almacenListResponse.setStatus(statusResponse);
+                return almacenListResponse;
+
+            } catch (Exception e) {
+                statusResponse.setStatusCode(-1);
+                statusResponse.setStatusText(e.getMessage());
+                almacenListResponse.setStatus(statusResponse);
+                return almacenListResponse;
+
+            }
+        });
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public CondicionListResponse getCondiciones(List<Object[]> parametrosString) {
+        return sessionFactory.getCurrentSession().doReturningWork(conn -> {
+            CondicionListResponse condicionListResponse=new CondicionListResponse();
+            StatusResponse statusResponse = new StatusResponse();
+            try {
+                DelegatingConnection del = new DelegatingConnection(conn);
+                OracleConnection connection = (OracleConnection) del.getInnermostDelegate();
+                Array arrayStrinb = connection.createARRAY("LISTPARAMETR0STRING", UtilDao.getStructsString("PARAMETR0STRING", connection, parametrosString));
+                CallableStatement cs = connection.prepareCall("call " + pkName + ".SP_GLOBAL(?,?,?,?)");
+                cs.setArray(1, arrayStrinb);
+                cs.registerOutParameter(2, OracleTypes.NUMBER);
+                cs.registerOutParameter(3, OracleTypes.VARCHAR);
+                cs.registerOutParameter(4, OracleTypes.CURSOR);
+                cs.execute();
+                statusResponse.setStatusCode(cs.getInt(2));
+                statusResponse.setStatusText(cs.getString(3));
+                condicionListResponse.setStatus(statusResponse);
+                ResultSet rs = (ResultSet) cs.getObject(4);
+                List<CondicionPago> condiciones=new ArrayList<>();
+
+                if (rs != null) {
+                    while (rs.next()) {
+                        CondicionPago condicion=new CondicionPago();
+                        condicion.setCode(rs.getString("COD_CONDICION"));
+                        condicion.setDescription(rs.getString("DESC_CONDICION"));
+                        condiciones.add(condicion);
+                    }
+                    rs.close();
+                    cs.close();
+                }
+                condicionListResponse.setCondiciones(condiciones);
+
+                return condicionListResponse;
+
+            } catch (Exception e) {
+                statusResponse.setStatusCode(-1);
+                statusResponse.setStatusText(e.getMessage());
+                condicionListResponse.setStatus(statusResponse);
+                return condicionListResponse;
+
+            }
+        });
+    }
 }

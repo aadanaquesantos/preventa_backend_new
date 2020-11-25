@@ -4,8 +4,27 @@ public class Product {
     private String code;
     private String description;
     private String uri;
-    private Double price;
+    private Double priceBase;
+    private Double priceSugerido;
+    private String um;
     private boolean isBonif;
+    private boolean isSugerido;
+
+    public String getUm() {
+        return um;
+    }
+
+    public void setUm(String um) {
+        this.um = um;
+    }
+
+    public boolean isSugerido() {
+        return isSugerido;
+    }
+
+    public void setSugerido(boolean sugerido) {
+        isSugerido = sugerido;
+    }
 
     public String getCode() {
         return code;
@@ -31,12 +50,20 @@ public class Product {
         this.uri = uri;
     }
 
-    public Double getPrice() {
-        return price;
+    public Double getPriceBase() {
+        return priceBase;
     }
 
-    public void setPrice(Double price) {
-        this.price = price;
+    public void setPriceBase(Double priceBase) {
+        this.priceBase = priceBase;
+    }
+
+    public Double getPriceSugerido() {
+        return priceSugerido;
+    }
+
+    public void setPriceSugerido(Double priceSugerido) {
+        this.priceSugerido = priceSugerido;
     }
 
     public boolean isBonif() {

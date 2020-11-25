@@ -16,10 +16,6 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-
-
-
-
     @PostMapping("login")
     public UserResponse getClientesByDiaV3(@RequestBody User user) throws Exception {
         return userService.loginByUserEmail(user.getUserEmail(), user.getPassword());
@@ -71,10 +67,10 @@ public class UserController {
     @GetMapping("getSueldo")
     public SueldoResponse getSueldo(@RequestParam(value = "usuario") String usuario) throws Exception {
         Object[] pProcedure = new Object[2];
-        pProcedure[0] = "v_PROCEDURE";
+        pProcedure[0] = "p_PROCEDURE";
         pProcedure[1] = "SP_GET_SUELDO";
         Object[] pDni = new Object[2];
-        pDni[0] = "v_USUARIO";
+        pDni[0] = "p_USUARIO";
         pDni[1] = usuario;
         List<Object[]> parametros = new ArrayList<>();
         parametros.add(pProcedure);
@@ -86,7 +82,7 @@ public class UserController {
     @GetMapping("getPeriodos")
     public PeriodoListResponse getPeriodos() throws Exception {
         Object[] pProcedure = new Object[2];
-        pProcedure[0] = "v_PROCEDURE";
+        pProcedure[0] = "p_PROCEDURE";
         pProcedure[1] = "SP_GET_PERIODOS";
         List<Object[]> parametros = new ArrayList<>();
         parametros.add(pProcedure);
@@ -97,21 +93,21 @@ public class UserController {
     @GetMapping("getAvanceByPeriodo")
     public AvanceResponse getAvanceBtPeriodo(@RequestParam(value = "usuario") String usuario,@RequestParam(value = "annio") String annio,@RequestParam(value = "periodo") String periodo) throws Exception {
         Object[] pProcedure = new Object[2];
-        pProcedure[0] = "v_PROCEDURE";
+        pProcedure[0] = "p_PROCEDURE";
         pProcedure[1] = "SP_GET_AVANCE";
 
 
         Object[] pUsuario = new Object[2];
-        pUsuario[0] = "v_USUARIO";
+        pUsuario[0] = "p_USUARIO";
         pUsuario[1] = usuario;
 
         Object[] pAnnio = new Object[2];
-        pAnnio[0] = "v_ANNIO";
+        pAnnio[0] = "p_ANNIO";
         pAnnio[1] = annio;
 
 
         Object[] pPeriodo= new Object[2];
-        pPeriodo[0] = "v_PERIODO";
+        pPeriodo[0] = "p_PERIODO";
         pPeriodo[1] = periodo;
 
 
@@ -128,20 +124,20 @@ public class UserController {
     @GetMapping("getAvanceProveedorByPeriodo")
     public AvanceProveedorListResponse getAvanceProveedorByPeriodo(@RequestParam(value = "usuario") String usuario,@RequestParam(value = "annio") String annio,@RequestParam(value = "periodo") String periodo) throws Exception {
         Object[] pProcedure = new Object[2];
-        pProcedure[0] = "v_PROCEDURE";
+        pProcedure[0] = "p_PROCEDURE";
         pProcedure[1] = "SP_GET_AVANCE_PROVEEDOR";
 
         Object[] pUsuario = new Object[2];
-        pUsuario[0] = "v_USUARIO";
+        pUsuario[0] = "p_USUARIO";
         pUsuario[1] = usuario;
 
         Object[] pAnnio = new Object[2];
-        pAnnio[0] = "v_ANNIO";
+        pAnnio[0] = "p_ANNIO";
         pAnnio[1] = annio;
 
 
         Object[] pPeriodo= new Object[2];
-        pPeriodo[0] = "v_PERIODO";
+        pPeriodo[0] = "p_PERIODO";
         pPeriodo[1] = periodo;
 
 
@@ -157,20 +153,20 @@ public class UserController {
     @GetMapping("getComisiones")
     public AvancePoliticaListResponse getComisiones(@RequestParam(value = "usuario") String usuario,@RequestParam(value = "annio") String annio,@RequestParam(value = "periodo") String periodo) throws Exception {
         Object[] pProcedure = new Object[2];
-        pProcedure[0] = "v_PROCEDURE";
+        pProcedure[0] = "p_PROCEDURE";
         pProcedure[1] = "SP_GET_COMISIONES";
 
         Object[] pUsuario = new Object[2];
-        pUsuario[0] = "v_USUARIO";
+        pUsuario[0] = "p_USUARIO";
         pUsuario[1] = usuario;
 
         Object[] pAnnio = new Object[2];
-        pAnnio[0] = "v_ANNIO";
+        pAnnio[0] = "p_ANNIO";
         pAnnio[1] = annio;
 
 
         Object[] pPeriodo= new Object[2];
-        pPeriodo[0] = "v_PERIODO";
+        pPeriodo[0] = "p_PERIODO";
         pPeriodo[1] = periodo;
 
 

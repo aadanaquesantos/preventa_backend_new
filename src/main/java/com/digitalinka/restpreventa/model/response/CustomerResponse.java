@@ -1,22 +1,10 @@
 package com.digitalinka.restpreventa.model.response;
 
 import com.digitalinka.restpreventa.model.Customer;
-import com.digitalinka.restpreventa.model.DispatchAddress;
-
-import java.util.List;
 
 public class CustomerResponse {
     private Customer customer;
-    private List<DispatchAddress> addresses;
     private StatusResponse status;
-
-    public StatusResponse getStatus() {
-        return status;
-    }
-
-    public void setStatus(StatusResponse status) {
-        this.status = status;
-    }
 
     public Customer getCustomer() {
         return customer;
@@ -26,11 +14,11 @@ public class CustomerResponse {
         this.customer = customer;
     }
 
-    public List<DispatchAddress> getAddresses() {
-        return addresses;
+    public StatusResponse getStatus() {
+        return status;
     }
 
-    public void setAddresses(List<DispatchAddress> addresses) {
-        this.addresses = addresses;
+    public void setStatus(StatusResponse status) {
+        this.status = status;
     }
 }

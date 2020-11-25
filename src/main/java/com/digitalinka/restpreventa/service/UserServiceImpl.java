@@ -51,4 +51,14 @@ public class UserServiceImpl  implements UserService{
     public AvancePoliticaListResponse getComisiones(List<Object[]> parametrosString) {
             return userDao.getComisiones(parametrosString);
     }
+
+    @Override
+    public AlmacenListResponse getAlmacenes(List<Object[]> parametrosString) {
+        return userDao.getAlmacenes(parametrosString);
+    }
+
+    @Override
+    public CondicionListResponse getCondiciones(List<Object[]> parametrosString) {
+        return userDao.getCondiciones(parametrosString);
+    }
 }

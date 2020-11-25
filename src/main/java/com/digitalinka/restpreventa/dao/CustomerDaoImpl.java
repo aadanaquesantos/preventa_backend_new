@@ -8,7 +8,6 @@ import oracle.jdbc.OracleTypes;
 import oracle.jdbc.driver.OracleConnection;
 import org.apache.commons.dbcp2.DelegatingConnection;
 import org.hibernate.SessionFactory;
-import org.hibernate.jdbc.ReturningWork;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
@@ -32,64 +31,62 @@ public class CustomerDaoImpl  implements CustomerDao {
 
     @Transactional(readOnly = true)
     @Override
-    public CustomerListResponse getClienteList(String usuario) {
-            return sessionFactory.getCurrentSession().doReturningWork(new ReturningWork<CustomerListResponse>() {
-                @Override
-                public CustomerListResponse execute(Connection connection) throws SQLException {
-                    CustomerListResponse customerListResponse = new CustomerListResponse();
-                    StatusResponse statusResponse=new StatusResponse();
-                    try {
-                        CallableStatement cs = connection.prepareCall(" { call "+nombrePaquete+".CLIENTES_BY_DIAV2(?,?,?)}");
-                        cs.setString(
-                                1,usuario);
-                        cs.registerOutParameter(2, oracle.jdbc.OracleTypes.NUMBER);
-                        cs.registerOutParameter(3, oracle.jdbc.OracleTypes.CURSOR);
-                        cs.execute();
-                     //   String ignoresec=cs.getString(2);
-                        ResultSet rs = (ResultSet) cs.getObject(3);
-                        List<Customer> customers=new ArrayList<>();
-                        //int i=0;
-                        if (rs!= null) {
-                            while (rs.next()) {
-
+    public CustomerLocalListResponse getClienteList(List<Object[]> parametrosString) {
+        return sessionFactory.getCurrentSession().doReturningWork(conn -> {
+            CustomerLocalListResponse customerListResponse=new CustomerLocalListResponse();
+            StatusResponse statusResponse = new StatusResponse();
+            try {
+                DelegatingConnection del = new DelegatingConnection(conn);
+                OracleConnection connection = (OracleConnection) del.getInnermostDelegate();
+                Array arrayStrinb = connection.createARRAY("LISTPARAMETR0STRING", UtilDao.getStructsString("PARAMETR0STRING", connection, parametrosString));
+                CallableStatement cs = connection.prepareCall("call " + pkName + ".SP_GLOBAL(?,?,?,?)");
+                cs.setArray(1, arrayStrinb);
+                cs.registerOutParameter(2, OracleTypes.NUMBER);
+                cs.registerOutParameter(3, OracleTypes.VARCHAR);
+                cs.registerOutParameter(4, OracleTypes.CURSOR);
+                cs.execute();
+                statusResponse.setStatusCode(cs.getInt(2));
+                statusResponse.setStatusText(cs.getString(3));
+                customerListResponse.setStatus(statusResponse);
+                ResultSet rs = (ResultSet) cs.getObject(4);
+                List<CustomerLocal> customerLocals=new ArrayList<>();
+                if (rs != null) {
+                    while (rs.next()) {
+                        CustomerLocal customerLocal=new CustomerLocal();
                                 Customer customer=new Customer();
-                                customer.setCode(rs.getString(1));
-                                customer.setDescription(rs.getString(2));
-                                customer.setAddress(rs.getString(3));
-                                customer.setStatus(rs.getString(12));
+                                customer.setCode(rs.getString("CODCLIENTE"));
+                                customer.setDescription(rs.getString("DESCCLIENTE"));
+                                customer.setStatus(rs.getString("ESTADOCLIENTE"));
+                                DispatchAddress dispatchAddress=new DispatchAddress();
+                                dispatchAddress.setCode(rs.getString("CODLOCAL"));
+                                dispatchAddress.setDescription(rs.getString("DIRECCION"));
 
+                                customerLocal.setCustomer(customer);
+                                customerLocal.setDispatchAddress(dispatchAddress);
 
-                                customers.add(customer);
-
-                            }
-                            rs.close();
-                        }
-
-
-                        statusResponse.setStatusCode(1);
-                        statusResponse.setStatusText("OK");
-                        customerListResponse.setCustomers(customers);
-                        customerListResponse.setStatus(statusResponse);
-                    } catch (Exception e) {
-                        statusResponse.setStatusCode(-1);
-                        statusResponse.setStatusText(e.getMessage());
-                        customerListResponse.setStatus(statusResponse);
-
+                                customerLocals.add(customerLocal);
                     }
-                    return customerListResponse;
+                    rs.close();
+                    cs.close();
                 }
+                customerListResponse.setCustomerLocals(customerLocals);
 
-            });
+                return customerListResponse;
 
+            } catch (Exception e) {
+                statusResponse.setStatusCode(-1);
+                statusResponse.setStatusText(e.getMessage());
+                customerListResponse.setStatus(statusResponse);
+                return customerListResponse;
 
-
-
+            }
+        });
 
     }
 
     @Transactional(readOnly = true)
     @Override
-    public CustomerResponse getCustomerInfo(List<Object[]> parametrosString) {
+    public CustomerResponse getCustomer(List<Object[]> parametrosString) {
         return sessionFactory.getCurrentSession().doReturningWork(conn -> {
             CustomerResponse customerResponse=new CustomerResponse();
             StatusResponse statusResponse = new StatusResponse();
@@ -113,7 +110,7 @@ public class CustomerDaoImpl  implements CustomerDao {
                        Customer customer=new Customer();
                        customer.setCode(rs.getString("COD_CLIENTE"));
                        customer.setDescription(rs.getString("DESC_CLIENTE"));
-                       customer.setStatus(rs.getString("DIR_FACTURACION"));
+                       customer.setAddress(rs.getString("DIR_FACTURACION"));
                        customer.setDni(rs.getString("DNI"));
                        customer.setRuc(rs.getString("RUC"));
                        customer.setPhone(rs.getString("TELEFONO_FIJO"));
@@ -164,10 +161,14 @@ public class CustomerDaoImpl  implements CustomerDao {
                         DispatchAddress address=new DispatchAddress();
                         address.setCode(rs.getString("COD_LOCAL"));
                         address.setDescription(rs.getString("DIRECCION"));
+                        address.setStatusLocal(rs.getString("STATUS_LOCAL"));
                         Route route=new Route();
                         route.setCode(rs.getString("COD_RUTA"));
                         route.setDescription(rs.getString("DESC_RUTA"));
-                        route.setDivision(rs.getString("DIVISION"));
+                        DivisionEmpresa divisionEmpresa=new DivisionEmpresa();
+                        divisionEmpresa.setCode(rs.getString("COD_DIVISION"));
+                        divisionEmpresa.setDescription(rs.getString("DESC_DIVISION"));
+                        route.setDivision(divisionEmpresa);
                         Company company=new Company();
                         company.setCode(rs.getString("COD_EMPRESA"));
                         company.setDescription(rs.getString("DESC_EMPRESA"));
@@ -187,6 +188,166 @@ public class CustomerDaoImpl  implements CustomerDao {
                 statusResponse.setStatusText(e.getMessage());
                 dispatcherAddressListResponse.setStatus(statusResponse);
                 return dispatcherAddressListResponse;
+
+            }
+        });
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public RouteListResponse getRoutesByDia(List<Object[]> parametrosString) {
+        return null;
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public DispatchAddressResponse getAdressPedido(List<Object[]> parametrosString) {
+        return sessionFactory.getCurrentSession().doReturningWork(conn -> {
+            DispatchAddressResponse dispatchAddressResponse=new DispatchAddressResponse();
+            StatusResponse statusResponse = new StatusResponse();
+            try {
+                DelegatingConnection del = new DelegatingConnection(conn);
+                OracleConnection connection = (OracleConnection) del.getInnermostDelegate();
+                Array arrayStrinb = connection.createARRAY("LISTPARAMETR0STRING", UtilDao.getStructsString("PARAMETR0STRING", connection, parametrosString));
+                CallableStatement cs = connection.prepareCall("call " + pkName + ".SP_GLOBAL(?,?,?,?)");
+                cs.setArray(1, arrayStrinb);
+                cs.registerOutParameter(2, OracleTypes.NUMBER);
+                cs.registerOutParameter(3, OracleTypes.VARCHAR);
+                cs.registerOutParameter(4, OracleTypes.CURSOR);
+                cs.execute();
+                statusResponse.setStatusCode(cs.getInt(2));
+                statusResponse.setStatusText(cs.getString(3));
+                dispatchAddressResponse.setStatus(statusResponse);
+                ResultSet rs = (ResultSet) cs.getObject(4);
+                DispatchAddress dispatchAddress=new DispatchAddress();
+                if (rs != null) {
+                    while (rs.next()) {
+                        dispatchAddress.setCode(rs.getString("COD_LOCAL"));
+                        dispatchAddress.setDescription(rs.getString("DIRECCION"));
+                        dispatchAddress.setStatusLocal(rs.getString("STATUS_LOCAL"));
+                        Route route=new Route();
+                        route.setCode(rs.getString("COD_RUTA"));
+                        route.setDescription(rs.getString("DESC_RUTA"));
+                        DivisionEmpresa division=new DivisionEmpresa();
+                        division.setCode(rs.getString("COD_DIVISION"));
+                        division.setDescription(rs.getString("DESC_DIVISION"));
+                        route.setDivision(division);
+                        Company company=new Company();
+                        company.setCode(rs.getString("COD_EMPRESA"));
+                        company.setDescription(rs.getString("DESC_EMPRESA"));
+                        route.setCompany(company);
+
+                        ListaPrecios lp=new ListaPrecios();
+                        lp.setCode(rs.getString("COD_LISTA"));
+                        lp.setDescription(rs.getString("DESC_LISTA"));
+                        dispatchAddress.setListaPrecios(lp);
+                        dispatchAddress.setRoute(route);
+
+                    }
+                    rs.close();
+                    cs.close();
+                }
+                dispatchAddressResponse.setDispatchAddress(dispatchAddress);
+
+                return dispatchAddressResponse;
+
+            } catch (Exception e) {
+                statusResponse.setStatusCode(-1);
+                statusResponse.setStatusText(e.getMessage());
+                dispatchAddressResponse.setStatus(statusResponse);
+                return dispatchAddressResponse;
+
+            }
+        });
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public CondicionListResponse getCondiciones(List<Object[]> parametrosString) {
+        return sessionFactory.getCurrentSession().doReturningWork(conn -> {
+            CondicionListResponse condicionListResponse=new CondicionListResponse();
+            StatusResponse statusResponse = new StatusResponse();
+            try {
+                DelegatingConnection del = new DelegatingConnection(conn);
+                OracleConnection connection = (OracleConnection) del.getInnermostDelegate();
+                Array arrayStrinb = connection.createARRAY("LISTPARAMETR0STRING", UtilDao.getStructsString("PARAMETR0STRING", connection, parametrosString));
+                CallableStatement cs = connection.prepareCall("call " + pkName + ".SP_GLOBAL(?,?,?,?)");
+                cs.setArray(1, arrayStrinb);
+                cs.registerOutParameter(2, OracleTypes.NUMBER);
+                cs.registerOutParameter(3, OracleTypes.VARCHAR);
+                cs.registerOutParameter(4, OracleTypes.CURSOR);
+                cs.execute();
+                statusResponse.setStatusCode(cs.getInt(2));
+                statusResponse.setStatusText(cs.getString(3));
+                condicionListResponse.setStatus(statusResponse);
+                ResultSet rs = (ResultSet) cs.getObject(4);
+                List<CondicionPago> condiciones=new ArrayList<>();
+                if (rs != null) {
+                    while (rs.next()) {
+                        CondicionPago condicion=new CondicionPago();
+                        condicion.setCode(rs.getString("COD_CONDICION"));
+                        condicion.setDescription(rs.getString("DESC_CONDICION"));
+                        condiciones.add(condicion);
+
+                    }
+                    rs.close();
+                    cs.close();
+                }
+                condicionListResponse.setCondiciones(condiciones);
+
+                return condicionListResponse;
+
+            } catch (Exception e) {
+                statusResponse.setStatusCode(-1);
+                statusResponse.setStatusText(e.getMessage());
+                condicionListResponse.setStatus(statusResponse);
+                return condicionListResponse;
+
+            }
+        });
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public TipoDocListResponse getTiposDocs(List<Object[]> parametrosString) {
+        return sessionFactory.getCurrentSession().doReturningWork(conn -> {
+            TipoDocListResponse tipoDocListResponse=new TipoDocListResponse();
+            StatusResponse statusResponse = new StatusResponse();
+            try {
+                DelegatingConnection del = new DelegatingConnection(conn);
+                OracleConnection connection = (OracleConnection) del.getInnermostDelegate();
+                Array arrayStrinb = connection.createARRAY("LISTPARAMETR0STRING", UtilDao.getStructsString("PARAMETR0STRING", connection, parametrosString));
+                CallableStatement cs = connection.prepareCall("call " + pkName + ".SP_GLOBAL(?,?,?,?)");
+                cs.setArray(1, arrayStrinb);
+                cs.registerOutParameter(2, OracleTypes.NUMBER);
+                cs.registerOutParameter(3, OracleTypes.VARCHAR);
+                cs.registerOutParameter(4, OracleTypes.CURSOR);
+                cs.execute();
+                statusResponse.setStatusCode(cs.getInt(2));
+                statusResponse.setStatusText(cs.getString(3));
+                tipoDocListResponse.setStatus(statusResponse);
+                ResultSet rs = (ResultSet) cs.getObject(4);
+                List<TipoDoc> tipoDocs=new ArrayList<>();
+                if (rs != null) {
+                    while (rs.next()) {
+                        TipoDoc tipoDoc=new TipoDoc();
+                        tipoDoc.setCode(rs.getString("COD_TIPO_DOC"));
+                        tipoDoc.setDescription(rs.getString("DESC_TIPO_DOC"));
+                        tipoDocs.add(tipoDoc);
+
+                    }
+                    rs.close();
+                    cs.close();
+                }
+                tipoDocListResponse.setTipoDocs(tipoDocs);
+
+                return tipoDocListResponse;
+
+            } catch (Exception e) {
+                statusResponse.setStatusCode(-1);
+                statusResponse.setStatusText(e.getMessage());
+                tipoDocListResponse.setStatus(statusResponse);
+                return tipoDocListResponse;
 
             }
         });

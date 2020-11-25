@@ -3,7 +3,7 @@ package com.digitalinka.restpreventa.model;
 public class Route {
     private String code;
     private String description;
-    private String division;
+    private DivisionEmpresa division;
     private Company company;
 
     public Company getCompany() {
@@ -14,11 +14,11 @@ public class Route {
         this.company = company;
     }
 
-    public String getDivision() {
+    public DivisionEmpresa getDivision() {
         return division;
     }
 
-    public void setDivision(String division) {
+    public void setDivision(DivisionEmpresa division) {
         this.division = division;
     }
 
